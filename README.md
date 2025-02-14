@@ -27,3 +27,12 @@ Jane Smith,jane@example.com,9876543210
 API                   endpoints
 GET/import       Displays the CSV upload form
 POST/importcsv   Processes CSV file and stores data
+
+//3rd function run
+API   Endpoint
+GET  (http://127.0.0.1:8000/api/getsectionaniaml)
+
+4th function run 
+http://localhost:8000/testvalidationview  (for view show)
+then submit show validation
+
