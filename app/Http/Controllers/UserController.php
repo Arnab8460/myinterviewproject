@@ -13,6 +13,7 @@ use Illuminate\Contracts\Validation\Rule;
 use Intervention\Image\Facades\Image;
 use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Storage;
+use App\Rules\ValidName;
 
 class UserController extends Controller
 {
@@ -109,17 +110,16 @@ class UserController extends Controller
 
 
    //4 No Question function
-   public function passes($attribute, $values){
-    if(strlen($values)<5 || strlen($values)>100 ){
-        return false;
-    }
-    if(!preg_match("/^[a-zA-Z][a-zA-Z-']{3,98}[a-zA-Z]$/", $values)){
-        return false;
-    }
-    if(preg_match("/[\s'-]{2,}",values)){
-        return false;
-    }
-    return true;
+   public function testvalidationview(){
+    return view('testvalidation');
    }
+   public function testValidation(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', new ValidName()],
+        ]);
+
+        return response()->json(['message' => 'Validation passed', 'data' => $validated]);
+    }
    
 }
