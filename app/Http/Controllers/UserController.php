@@ -17,23 +17,25 @@ use Illuminate\Support\Facades\Storage;
 class UserController extends Controller
 {
     //1 No Question function
-   public function importcsv(Request $request)
-   {
-    $request->validator([
-        'csv_file'=>'required|mimes:csv,txt|max:2048',
-    ]);
-    $file=foopen($request->file('csv_file'),'r');
-    $header=fgetcsv($file);
-    while ($row=fgetcsv($file)){
-        Test::create([
-            'name'=>$row[0],
-            'email'=>$row[1],
-            'mobile_no'=>$row[2],
+    public function importcsv(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|mimes:csv,txt|max:2048',
         ]);
+        $file = fopen($request->file('csv_file')->getRealPath(), 'r');
+        $header = fgetcsv($file); 
+        while ($row = fgetcsv($file)) {
+            Test::create([
+                'name' => $row[0],
+                'email' => $row[1],
+                'mobile_no' => $row[2],
+            ]);
+        }
+        fclose($file);
+    
+        return response()->json(['message' => 'CSV file imported successfully'], 200);
     }
-    fclose($file);
-    return response()->json(['message'=>'CSV file imported successfully'],200);
-   }
+    
 
 
    //2 No Question function
