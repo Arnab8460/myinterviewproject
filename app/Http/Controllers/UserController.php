@@ -40,58 +40,73 @@ class UserController extends Controller
 
    //2 No Question function
 
-   public function uploadmedia(Request $request){
-    $request->validate([
-        'file'=>'required|mimes:jpg,jpeg,png|max:5120',
-    ]);
-    $file=$request->file('file');
-    $extension=$file->getClientOriginalExtension();
-    $path='upload/media/';
-    if(in_array($extension, ['jpg','jpeg','png'])){
-        $image= Image::make($file);
-        if($file->getSize()>5120){
-            $image->resize(800, null, function ($constraint){
-                $constraint->aspectRatio();
-            })->encode($extension,70);
-        }
-        storage::put($path.$file->hasName(), (string)$image);
-    }elseif(in_array($extension, ['mp4', 'mov', 'avi'])){
-        $ffmpeg=FFMpeg::create();
-        $video=$ffmpeg->open($file->getRealPath());
-        $format= new X24();
-        $format=setKilloBitrate(500);
-        $video->save($format, storage_path("app/{$path}".$path.$file->hasName()));
-    }else{
-        return response()->json(['message'=>'Invalid file type'], 400);
+    public function uploadview(){
+        return view('upload');
     }
-    return response()->json(['message'=>'File uploaded successfully'], 200);
-   }
+    public function uploadmedia(Request $request)
+    {
+       
+        $request->validate([
+            'file' => 'required|mimes:jpg,jpeg,png,mp4,mov,avi|max:102400', // 100MB max for videos
+        ]);
+
+        $file = $request->file('file');
+        $extension = $file->getClientOriginalExtension();
+        $fileName = time() . '.' . $extension;
+        $path = 'upload/media/';
+
+        if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+            $image = Image::make($file);
+            if ($file->getSize() > (5 * 1024 * 1024)) {
+                $image->resize(800, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                })->encode($extension, 70); 
+            }
+           
+            Storage::put($path . $fileName, (string)$image);
+        } 
+        
+        elseif (in_array($extension, ['mp4', 'mov', 'avi'])) {
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg->open($file->getRealPath());
+            $format = new X264();
+            $format->setKiloBitrate(500); 
+            $video->save($format, storage_path("app/{$path}" . $fileName));
+        } 
+        else {
+            return response()->json(['message' => 'Invalid file type'], 400);
+        }
+
+        return response()->json(['message' => 'File uploaded successfully', 'file_path' => $path . $fileName], 200);
+    }
 
 
    //3 No Question function 
 
-   public function getsectionaniaml(){
-    $section= Section::with(['enclosures','animals'])->get();
-    $response=[
-        'total_count'=>$section->count(),
-        'result'=>$section->map(function($section){
-            return [
-                'section_id'=>$section->id,
-                'section_name'=>$section->name,
-                'enclosure_count'=>$section->enclosure->count(),
-                'animal_list'=>$section->animals->map(function($animal){
-                    return [
-                        'animal_id'=>$animal->id,
-                        'animal_name'=>$animal->name,
-                    ];
-                }),
+    public function getsectionaniaml()
+    {
+        $sections = Section::with(['enclosures', 'animals'])->get();
 
-            ];
-        })
+        $response = [
+            'total_count' => $sections->count(),
+            'result' => $sections->map(function ($section) {
+                return [
+                    'section_id' => $section->id,
+                    'section_name' => $section->name,
+                    'enclosure_count' => $section->enclosures->count(),
+                    'animal_list' => $section->animals->map(function ($animal) {
+                        return [
+                            'animal_id' => $animal->id,
+                            'animal_name' => $animal->name,
+                        ];
+                    }),
+                ];
+            }),
+        ];
 
-    ];
-    return response()->json($response, 200);
-   }
+        return response()->json($response, 200);
+    }
+
 
    //4 No Question function
    public function passes($attribute, $values){

@@ -9,8 +9,8 @@ use App\Http\Controllers\UserController;
 Route::get('/import', function () {
     return view('import');
 });
-
 Route::post('/importcsv', [UserController::class, 'importcsv'])->name('importcsv');
+Route::get('/uploadview', [UserController::class, 'uploadview'])->name('uploadview');
 Route::post('/upload', [UserController::class, 'uploadmedia'])->name('upload');
-Route::get('/getsectionaniaml', [UserController::class, 'getsectionaniaml'])->name('getsectionaniaml');
+// Route::get('/getsectionaniaml', [UserController::class, 'getsectionaniaml'])->name('getsectionaniaml');
 Route::get('/passes', [UserController::class, 'passes'])->name('passes');
